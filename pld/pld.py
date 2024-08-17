@@ -37,9 +37,11 @@ def login_flow(argd, driver):
 
 def load_cookies(argd, driver):
     """Load cookies from file."""
+    driver.get("https://www.patreon.com")
     cookies = pickle.load(open(argd["cookies"], "rb"))
     for cookie in cookies:
         driver.add_cookie(cookie)
+    driver.refresh()
 
 def save_cookies(argd, driver):
     """Save cookies to file."""
