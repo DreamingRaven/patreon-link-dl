@@ -3,6 +3,8 @@ import sys
 from pathlib import Path
 import configargparse as argparse
 from pld.pld import main
+from urllib.parse import urlparse
+import re
 
 def cli():
     argd = arg_handler(sys.argv[1:])
@@ -32,6 +34,42 @@ def arg_handler(argv, description: str|None = None):
         "download",
         help="download links",
     )
+
+    parser_download.add_argument(
+        "--pages",
+        nargs="+",
+        required=True,
+        default=[],
+        type=list_valid_url,
+        help="pages to scrape to populate download links",
+    )
+
+    parser_download.add_argument(
+        "--include-regex",
+        nargs="+",
+        default=[r"https.*patreon\.com\/file.*",
+                 r"https.*drive\.google\.com\/file.*",
+                 r"https.*dropbox.com/s.*"],
+        type=list_valid_regex,
+        help="Regex to define what download links we want to include",
+    )
+
+    parser_download.add_argument(
+        "--exclude-regex",
+        nargs="+",
+        default=["$^"],
+        type=list_valid_regex,
+        help="Regex to define what download links we want to exclude",
+    )
+
+    parser_download.add_argument(
+        "--output",
+        required=True,
+        type=Path,
+        help="output directory",
+    )
+
+
 
     args = vars(parent_parser.parse_args())
     return args
@@ -90,6 +128,23 @@ def add_general_params(parser):
         action="store_true",
         help="Will not make any changes.",
     )
+
+def list_valid_url(urls):
+    for url in urls:
+        try:
+            urlparse(url)
+        except AttributeError:
+            raise argparse.ArgumentTypeError(f"{url} is not a valid url")
+    return urls
+
+
+def list_valid_regex(regexes):
+    for regex in regexes:
+        try:
+            re.compile(regex)
+        except re.error as e:
+            raise argparse.ArgumentTypeError(f"{regex} is not a valid regex: {e}")
+    return regexes
 
 if __name__ == "__main__":
     cli()
