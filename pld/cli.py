@@ -29,6 +29,11 @@ def arg_handler(argv, description: str | None = None):
     )
 
     parser_download = subparsers.add_parser(
+        "login",
+        help="login to patreon",
+    )
+
+    parser_download = subparsers.add_parser(
         "download",
         help="download links",
     )
@@ -103,6 +108,13 @@ def add_general_params(parser):
         env_var="CONFIG",
         is_config_file=True,
         help="Load a non-default config from this path.",
+    )
+
+    parser.add_argument(
+        "--cookies",
+        default="cookies.txt",
+        type=Path,
+        help="cookie file involved in login.",
     )
 
     parser.add_argument(
