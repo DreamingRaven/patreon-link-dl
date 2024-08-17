@@ -25,5 +25,6 @@ pip install -e .
 With the environment already sourced, download all links from a page into the output directory.
 
 ```bash
+pld login # you will have a set amount of time to login then it will save your cookies
 pld download --pages https://www.patreon.com/posts/master-master-27816327 --output out/
 ```
