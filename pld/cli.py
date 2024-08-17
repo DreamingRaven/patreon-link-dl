@@ -48,19 +48,18 @@ def arg_handler(argv, description: str | None = None):
     )
 
     parser_download.add_argument(
-        "--include-regex",
+        "--include",
         nargs="+",
         default=[
-            r"https.*patreon\.com\/file.*",
-            r"https.*drive\.google\.com\/file.*",
-            r"https.*dropbox.com/s.*",
+            # r"https://.*dropbox.com/s.*|https://.*patreon.com/file.*|https://.*drive.google.com/file.*"
+            r"https://.*patreon.com/file.*"
         ],
         type=list_valid_regex,
         help="Regex to define what download links we want to include",
     )
 
     parser_download.add_argument(
-        "--exclude-regex",
+        "--exclude",
         nargs="+",
         default=["$^"],
         type=list_valid_regex,
