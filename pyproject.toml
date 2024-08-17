@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pld"
+dynamic = ["dependencies", "readme", "version"]
+authors = [
+    { name = "George Onoufriou", email = "GeorgeRavenCommunity+pld@pm.me" }
+]
+requires-python = ">=3.11"
+
+[project.scripts]
+pld = "pld.cli:cli"
+
+[projecty.urls]
+"Homepage" = "https://github.com/DreamingRaven/patreon-link-dl"
+
+[tool.setuptools]
+packages = ["pld"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+readme = { file = ["README.md"] }
+
+[tool.setuptools.package-data]
+pld = ["*.csv"]
