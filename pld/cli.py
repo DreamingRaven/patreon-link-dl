@@ -6,6 +6,7 @@ from pld.pld import main
 from urllib.parse import urlparse
 import re
 
+
 def cli():
     argd = arg_handler(sys.argv[1:])
     logger.basicConfig(
@@ -15,14 +16,11 @@ def cli():
     logger.debug(argd)
     main(argd)
 
-def arg_handler(argv, description: str|None = None):
+
+def arg_handler(argv, description: str | None = None):
     """Patreon link downloader cli"""
 
-    description = (
-        description
-        if description is not None
-        else "Patreon link downloader"
-    )
+    description = description if description is not None else "Patreon link downloader"
     parent_parser = general_parser_factory(description=description)
     subparsers = parent_parser.add_subparsers(
         title="actions",
@@ -47,9 +45,11 @@ def arg_handler(argv, description: str|None = None):
     parser_download.add_argument(
         "--include-regex",
         nargs="+",
-        default=[r"https.*patreon\.com\/file.*",
-                 r"https.*drive\.google\.com\/file.*",
-                 r"https.*dropbox.com/s.*"],
+        default=[
+            r"https.*patreon\.com\/file.*",
+            r"https.*drive\.google\.com\/file.*",
+            r"https.*dropbox.com/s.*",
+        ],
         type=list_valid_regex,
         help="Regex to define what download links we want to include",
     )
@@ -69,10 +69,9 @@ def arg_handler(argv, description: str|None = None):
         help="output directory",
     )
 
-
-
     args = vars(parent_parser.parse_args())
     return args
+
 
 def general_parser_factory(description):
     """Abstracted argument parser for ease of maintenance.
@@ -115,12 +114,12 @@ def add_general_params(parser):
         help="Activate debug/ verbose logging.",
     )
 
-    #parser.add_argument(
+    # parser.add_argument(
     #    "--version",
     #    action="version",
     #    version="%(prog)s {version}".format(version=__version__),
     #    help="Show the version and exit.",
-    #)
+    # )
 
     parser.add_argument(
         "--dry-run",
@@ -128,6 +127,7 @@ def add_general_params(parser):
         action="store_true",
         help="Will not make any changes.",
     )
+
 
 def list_valid_url(urls):
     for url in urls:
@@ -145,6 +145,7 @@ def list_valid_regex(regexes):
         except re.error as e:
             raise argparse.ArgumentTypeError(f"{regex} is not a valid regex: {e}")
     return regexes
+
 
 if __name__ == "__main__":
     cli()
