@@ -28,14 +28,19 @@ def arg_handler(argv, description: str | None = None):
         dest="action",
     )
 
-    parser_download = subparsers.add_parser(
+    parser_login = subparsers.add_parser(
         "login",
-        help="login to patreon",
+        help="login to patreon and save cookies",
     )
 
     parser_download = subparsers.add_parser(
         "download",
-        help="download links",
+        help="download links from a given page using cookies",
+    )
+
+    parser_logout = subparsers.add_parser(
+        "logout",
+        help="logout by deleting cookies",
     )
 
     parser_download.add_argument(

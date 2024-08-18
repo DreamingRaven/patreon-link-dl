@@ -15,10 +15,11 @@ def newDriver(argd):
     # options = webdriver.ChromeOptions()
     options = webdriver.FirefoxOptions()
     options.page_load_strategy = "normal"
-    options.set_preference("browser.download.folderList", 2)
-    options.set_preference("browser.download.manager.showWhenStarting", False)
-    # set the download path
-    options.set_preference("browser.download.dir", str(argd["output"].absolute()))
+    if argd.get("output"):
+        options.set_preference("browser.download.folderList", 2)
+        options.set_preference("browser.download.manager.showWhenStarting", False)
+        # set the download path
+        options.set_preference("browser.download.dir", str(argd["output"].absolute()))
     # driver = webdriver.Chrome(options=options)
     driver = webdriver.Firefox(options=options)
     return driver
@@ -31,6 +32,8 @@ def main(argd):
         download(argd)
     elif argd.get("action") == "login":
         authenticate(argd)
+    elif argd.get("action") == "logout":
+        delete_cookies(argd)
     else:
         raise ValueError("Unknown action: {}".format(argd.get("action")))
 
@@ -42,11 +45,20 @@ def authenticate(argd):
     driver.quit()
 
 
+def delete_cookies(argd):
+    path = pathlib.Path(argd["cookies"])
+    if path.is_file():
+        path.unlink()
+    else:
+        raise ValueError(
+            f"{argd['cookies']} does not exist or is not a file skipping deletion"
+        )
+
+
 def login_flow(argd, driver):
     driver.get("https://patreon.com/login")
     time.sleep(35)
     cookies = driver.get_cookies()
-    print(cookies)
 
 
 def load_cookies(argd, driver):
