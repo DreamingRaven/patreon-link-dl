@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import StaleElementReferenceException
 import pickle
 import time
 import re
@@ -98,12 +99,21 @@ def download(argd):
 
     for page in argd.get("pages"):
         driver.get(page)
+        time.sleep(3) #TODO: add a full WebDriverWait
         elems = driver.find_elements(by=By.TAG_NAME, value="a")
         # print(f"Found {len(elems)} elements on page {page}")
-        links = [
-            elem.get_attribute("href") for elem in elems if elem.get_attribute("href")
-        ]
-        # print(f"Found {len(links)} links on page {page}")
+        links = []
+        for elem in elems:
+            try:
+                link = elem.get_attribute("href")
+                if link:
+                    links.append(link)
+            except StaleElementReferenceException:
+                print(f"Stale element reference: `{elem}`. The page has changed and the reference to the link is no longer valid since first scan.")
+                pass
+        if len(links) == 0:
+            print(f"No links found on page {page}")
+            continue
         # use regex filters to remove unwanted links
         files = [
             link
