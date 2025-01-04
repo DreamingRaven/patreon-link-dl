@@ -53,11 +53,27 @@ def arg_handler(argv, description: str | None = None):
     )
 
     parser_download.add_argument(
+        "--timeout",
+        default=120,
+        type=int,
+        help="timeout in seconds for download requests",
+    )
+
+    parser_download.add_argument(
+        "--max-attempts",
+        default=-1,
+        type=int,
+        help="maximum attempts to download artifact before giving up",
+    )
+
+    parser_download.add_argument(
         "--include",
         nargs="+",
         default=[
             # r"https://.*dropbox.com/s.*|https://.*patreon.com/file.*|https://.*drive.google.com/file.*"
-            r"https://.*patreon.com/file.*"
+            r"https://.*dropbox.com/s.*",
+            r"https://.*patreon.com/file.*",
+            r"https://.*drive.google.com/file.*",
         ],
         type=list_valid_regex,
         help="Regex to define what download links we want to include",

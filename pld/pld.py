@@ -123,30 +123,71 @@ def download(argd):
         print(f"Found {len(files)} files on page {page}")
         timeout = 120
         for file in (pbar := tqdm.tqdm(files)):
-            start = datetime.datetime.utcnow()
-            pbar.set_description(file)
-            # open file in new tab
-            driver.execute_script(f"window.open('{file}', '_blank');")
-            time.sleep(1)
-            while not is_download_finished(argd):
-                time.sleep(1)
-                if datetime.datetime.utcnow() - start > datetime.timedelta(
-                    seconds=timeout
-                ):
-                    print("Timed out downloading file: ", file)
-                    break
+            download_file(argd, driver, pbar, file)
     driver.quit()
 
 
-def is_download_finished(argd):
+def download_file(argd, driver, pbar, file, attempt=0):
+    dir = pathlib.Path(argd["output"])
+    # count the number of NON-temp files in output directory
+    original_files = get_current_files(argd)
+    start = datetime.datetime.utcnow()
+    pbar.set_description(file)
+    # open file in new tab
+    driver.execute_script(f"window.open('{file}', '_blank');")
+    time.sleep(1)
+    while not is_download_finished(argd, original_files):
+        time.sleep(1)
+        if datetime.datetime.utcnow() - start > datetime.timedelta(
+            seconds=argd["timeout"]
+        ):
+            print(f"Timed out downloading file (attempt {attempt}): {file}")
+            new_files = get_current_files(argd) - original_files
+            delete_temp_files(argd)
+            delete_files(argd, files=new_files)
+            if argd["max_attempts"] == -1:
+                download_file(argd, driver, pbar, file, attempt + 1)
+            elif attempt < argd["max_attempts"]:
+                download_file(argd, driver, pbar, file, attempt + 1)
+            else:
+                print(f"Failed to download file after {attempt} attempts: {file}")
+                return
+
+def get_current_files(argd) -> set[pathlib.Path]:
+    """Get current files in output directory that are NOT temp files."""
+    dir = pathlib.Path(argd["output"])
+    return set(dir.glob("*.*")) - (set(dir.glob("*.part")) | set(dir.glob("*.crdownload")))
+
+def delete_temp_files(argd):
+    dir = pathlib.Path(argd["output"])
+    for file in dir.glob("*.part"):
+        file.unlink()
+    for file in dir.glob("*.crdownload"):
+        file.unlink()
+
+def delete_files(argd, files: set):
+    dir = pathlib.Path(argd["output"])
+    for file in files:
+        file.unlink()
+
+def is_download_finished(argd, original_files: set):
+    """Check if download is finished in output folder.
+
+    This is an incredibly hacky way to check if the download is finished.
+    We cant ask the browser, so we must check the contents of the output dir.
+    The caveat being that this only works if this is the only process that
+    modifies the directory.
+    """
     dir = pathlib.Path(argd["output"])
     firefox_temp_file = sorted(dir.glob("*.part"))
     chrome_temp_file = sorted(dir.glob("*.crdownload"))
     downloaded_files = sorted(dir.glob("*.*"))
+    new_files = get_current_files(argd) - original_files
     if (
         (len(firefox_temp_file) == 0)
         and (len(chrome_temp_file) == 0)
         and (len(downloaded_files) > 0)
+        and (len(new_files) == 1)
     ):
         return True
     else:
